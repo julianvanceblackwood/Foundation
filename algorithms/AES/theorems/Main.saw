@@ -1,0 +1,47 @@
+/*
+ * This is a SAW script that guides SAW to prove the properties found
+ * in `algorithms/AES/Main.cry`.
+ */
+
+// Include common SAW utilities.
+include "../../../shared/SAW/utils.saw";
+
+// Include theorems from `Cipher` for use as lemmas.
+include "Cipher.saw";
+
+// Import the Cryptol specification for AES's `Encrypt` and `Decrypt`
+// routines.
+import "../Main.cry";
+import "../Types.cry";
+
+// This helper lemma rewrites away the `split (join ...)` between
+// `decrypt` and `encrypt` in the `encryptInverts` proof goal.
+let verify_split_join : TopLevel Theorem =
+   proveit {{ \(xs : Block) -> split (join xs) == xs }} rme;
+
+// This parameterized lemma will be proven at all 3 key sizes (128,
+// 192, and 256).
+
+let verify_EncryptInverts (keySize : Int) : TopLevel Theorem =
+  do {
+    split_join_lemma <- verify_split_join;
+    CipherInverts_lemma_keySize <- verify_CipherInverts keySize;
+
+    proveit {{ EncryptInverts`{keySize} }}
+      do {
+        goal_eval_unint [ "split", "join", "InvCipher", "Cipher" ];
+        use_lemmas [ split_join_lemma, CipherInverts_lemma_keySize ];
+        goal_eval; trivial;
+      };
+  };
+
+/*
+ * Verify public properties of `algorithms::AES::Main`.
+ */
+let main : TopLevel [Theorem] = do {
+  EncryptInverts_lemmas <- for [128, 192, 256] verify_EncryptInverts;
+
+  summarize_verification;
+
+  return EncryptInverts_lemmas;
+};
