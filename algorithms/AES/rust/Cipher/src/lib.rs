@@ -207,6 +207,9 @@ pub fn cipher(ks: &[Block], plaintext: Block) -> Block {
 }
 
 /// FFI entrypoint for the `Cipher` function.
+///
+/// # Safety
+/// `k` must be 128, 192, or 256. Pointers must be non-null and valid.
 #[export_name = "Cipher"]
 pub extern "C" fn cipher_ffi(
     k: usize,
@@ -214,6 +217,12 @@ pub extern "C" fn cipher_ffi(
     pt_raw: *const u8,
     out_raw: *mut u8,
 ) {
+    if k != 128 && k != 192 && k != 256 {
+        return;
+    }
+    if expanded_key_raw.is_null() || pt_raw.is_null() || out_raw.is_null() {
+        return;
+    }
     let Nr = k / 32 + 6;
     let expanded_key = get_vec::<Block>(Nr + 1, expanded_key_raw);
     let pt = get_array::<u8, 16>(pt_raw);
@@ -237,6 +246,9 @@ pub fn inv_cipher(ks: &[Block], ciphertext: Block) -> Block {
 }
 
 /// FFI entrypoint for the `InvCipher` function.
+///
+/// # Safety
+/// `k` must be 128, 192, or 256. Pointers must be non-null and valid.
 #[export_name = "InvCipher"]
 pub extern "C" fn inv_cipher_ffi(
     k: usize,
@@ -244,6 +256,12 @@ pub extern "C" fn inv_cipher_ffi(
     ct_raw: *const u8,
     out_raw: *mut u8,
 ) {
+    if k != 128 && k != 192 && k != 256 {
+        return;
+    }
+    if expanded_key_raw.is_null() || ct_raw.is_null() || out_raw.is_null() {
+        return;
+    }
     let Nr = k / 32 + 6;
     let expanded_key = get_vec::<Block>(Nr + 1, expanded_key_raw);
     let ct = get_array::<u8, 16>(ct_raw);
