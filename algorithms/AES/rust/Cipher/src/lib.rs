@@ -211,7 +211,7 @@ pub fn cipher(ks: &[Block], plaintext: Block) -> Block {
 /// # Safety
 /// `k` must be 128, 192, or 256. Pointers must be non-null and valid.
 #[export_name = "Cipher"]
-pub extern "C" fn cipher_ffi(
+pub unsafe extern "C" fn cipher_ffi(
     k: usize,
     expanded_key_raw: *const Block,
     pt_raw: *const u8,
@@ -250,7 +250,7 @@ pub fn inv_cipher(ks: &[Block], ciphertext: Block) -> Block {
 /// # Safety
 /// `k` must be 128, 192, or 256. Pointers must be non-null and valid.
 #[export_name = "InvCipher"]
-pub extern "C" fn inv_cipher_ffi(
+pub unsafe extern "C" fn inv_cipher_ffi(
     k: usize,
     expanded_key_raw: *const Block,
     ct_raw: *const u8,

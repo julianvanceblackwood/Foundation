@@ -83,7 +83,7 @@ pub fn key_expansion(k: usize, key: &[Word]) -> [Block; 15] {
 /// `k` must be 128, 192, or 256. `key_raw` must point to `k/32` valid
 /// `Word` elements. `out_raw` must point to space for `k/32 + 7` blocks.
 #[export_name = "KeyExpansion"]
-pub extern "C" fn key_expansion_ffi(k: usize, key_raw: *const Word, out_raw: *mut Block) {
+pub unsafe extern "C" fn key_expansion_ffi(k: usize, key_raw: *const Word, out_raw: *mut Block) {
     if k != 128 && k != 192 && k != 256 {
         return;
     }
