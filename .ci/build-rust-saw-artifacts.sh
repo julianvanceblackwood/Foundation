@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/usr/bin/env bash
 
 # Run `cargo saw-build` on all Rust projects.
 set -e

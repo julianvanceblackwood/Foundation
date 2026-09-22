@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/usr/bin/env bash
 
 # Run `saw` on all `all.saw` files.
 set -e

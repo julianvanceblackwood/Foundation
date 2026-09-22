@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/usr/bin/env bash
 
 # Run `cargo build --release` on all Rust projects.
 set -e

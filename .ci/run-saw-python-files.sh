@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/usr/bin/env bash
 
 # Run all `saw.py` files in virtual environment for SAW Remote API.
 set -e
