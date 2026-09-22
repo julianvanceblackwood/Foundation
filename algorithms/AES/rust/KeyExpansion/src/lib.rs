@@ -3,7 +3,8 @@
 
 #![allow(non_snake_case)]
 
-use ffi_utils::{get_vec, output_vec};
+mod ffi;
+
 use Cipher::{Block, Word, SBOX};
 
 /// This table holds the word array for the round constant
@@ -75,24 +76,4 @@ pub fn key_expansion(k: usize, key: &[Word]) -> [Block; 15] {
         }
     }
     expanded_key
-}
-
-/// FFI entrypoint for the `KeyExpansion` function.
-///
-/// # Safety
-/// `k` must be 128, 192, or 256. `key_raw` must point to `k/32` valid
-/// `Word` elements. `out_raw` must point to space for `k/32 + 7` blocks.
-#[export_name = "KeyExpansion"]
-pub unsafe extern "C" fn key_expansion_ffi(k: usize, key_raw: *const Word, out_raw: *mut Block) {
-    if k != 128 && k != 192 && k != 256 {
-        return;
-    }
-    if key_raw.is_null() || out_raw.is_null() {
-        return;
-    }
-    let key = get_vec::<Word>(k / 32, key_raw);
-    let expanded_key = key_expansion(k, &key);
-    let mut expanded_key_vec: Vec<Block> = expanded_key.to_vec();
-    expanded_key_vec.resize(k / 32 + 6 + 1, [0; 16]);
-    output_vec::<Block>(&expanded_key_vec, out_raw);
 }

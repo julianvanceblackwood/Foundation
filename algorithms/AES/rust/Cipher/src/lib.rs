@@ -3,7 +3,7 @@
 
 #![allow(non_snake_case)]
 
-use ffi_utils::{get_array, get_vec, output_array};
+mod ffi;
 
 /// This sequence of bytes comprises the input, output, State, and
 /// Round Key [FIPS-PUB-197 Section 2.1].
@@ -206,30 +206,6 @@ pub fn cipher(ks: &[Block], plaintext: Block) -> Block {
     xorb(shiftrows(subbytes(mid)), ks[ks.len() - 1])
 }
 
-/// FFI entrypoint for the `Cipher` function.
-///
-/// # Safety
-/// `k` must be 128, 192, or 256. Pointers must be non-null and valid.
-#[export_name = "Cipher"]
-pub unsafe extern "C" fn cipher_ffi(
-    k: usize,
-    expanded_key_raw: *const Block,
-    pt_raw: *const u8,
-    out_raw: *mut u8,
-) {
-    if k != 128 && k != 192 && k != 256 {
-        return;
-    }
-    if expanded_key_raw.is_null() || pt_raw.is_null() || out_raw.is_null() {
-        return;
-    }
-    let Nr = k / 32 + 6;
-    let expanded_key = get_vec::<Block>(Nr + 1, expanded_key_raw);
-    let pt = get_array::<u8, 16>(pt_raw);
-    let ct = cipher(&expanded_key, pt);
-    output_array::<u8, 16>(&ct, out_raw);
-}
-
 /// This is an alternate version of the `InvCipher` function
 /// [FIPS-PUB-197 Section 5.3]. The following deviates from Algorithm 3
 /// but is functionally equivalent and more obviously the inverse of
@@ -243,28 +219,4 @@ pub fn inv_cipher(ks: &[Block], ciphertext: Block) -> Block {
         mid = inv_round(mid, ks[i]);
     }
     xorb(mid, ks[0])
-}
-
-/// FFI entrypoint for the `InvCipher` function.
-///
-/// # Safety
-/// `k` must be 128, 192, or 256. Pointers must be non-null and valid.
-#[export_name = "InvCipher"]
-pub unsafe extern "C" fn inv_cipher_ffi(
-    k: usize,
-    expanded_key_raw: *const Block,
-    ct_raw: *const u8,
-    out_raw: *mut u8,
-) {
-    if k != 128 && k != 192 && k != 256 {
-        return;
-    }
-    if expanded_key_raw.is_null() || ct_raw.is_null() || out_raw.is_null() {
-        return;
-    }
-    let Nr = k / 32 + 6;
-    let expanded_key = get_vec::<Block>(Nr + 1, expanded_key_raw);
-    let ct = get_array::<u8, 16>(ct_raw);
-    let pt = inv_cipher(&expanded_key, ct);
-    output_array::<u8, 16>(&pt, out_raw);
 }
