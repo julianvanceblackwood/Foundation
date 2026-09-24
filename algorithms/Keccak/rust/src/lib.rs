@@ -3,6 +3,9 @@
 
 #![allow(non_snake_case)]
 
+mod ffi;
+pub use ffi::Keccak_p_FFI;
+
 /// The `State` type is a 5-by-5-by-w array of bits that represents
 /// the state for a `Keccak-p` permutation.  The indices for `x`, `y`,
 /// and `z` coordinates range from 0 to 4, 0 to 4, and 0 to `w-1`,
@@ -154,20 +157,6 @@ fn Keccak_p(A: &mut State) {
     for ir in (12 + 2 * l - nr)..(12 + 2 * l) {
         Rnd(A, ir);
     }
-}
-
-/// FFI entrypoint for the `Keccak-p` function, specialized to `w = 64`.
-#[allow(clippy::not_unsafe_ptr_arg_deref)]
-#[allow(clippy::needless_range_loop)]
-#[export_name = "Keccak_p_FFI"]
-pub extern "C" fn Keccak_p_FFI(A_in: *const State, A_out: *mut State) {
-    let A = unsafe { &mut *A_out };
-    for x in 0..5usize {
-        for y in 0..5usize {
-            A[x][y] = unsafe { *A_in }[x][y];
-        }
-    }
-    Keccak_p(A);
 }
 
 /// # `pad10s1` [CSF-0.1 Section 2.1.2].
